@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AUT Value Calculator</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+header {
+    text-align: center;
+    padding: 20px;
+    background: #020617;
+}
+
+h1 {
+    margin: 0;
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
+}
+
+.search {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: #020617;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.flex {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    background: #38bdf8;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+.result {
+    margin-top: 20px;
+    font-size: 1.2rem;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>AUT Value Calculator</h1>
+</header>
+
+<div class="container">
+
+<input class="search" id="search" placeholder="Search items, stands, specs...">
+
+<div id="list"></div>
+
+<h2>Trade Calculator</h2>
+
+<div class="flex">
+    <input id="itemA" placeholder="Your item">
+    <input id="itemB" placeholder="Their item">
+</div>
+
+<br>
+
+<button onclick="calculate()">Compare Trade</button>
+
+<div class="result" id="result"></div>
+
+</div>
+
+<script>
+
+// ===== DATABASE (EDIT THIS) =====
+const items = [
+    { name: "Shadow The World", value: 90 },
+    { name: "Gojo", value: 85 },
+    { name: "Nocturnus", value: 100 },
+    { name: "Killer Queen", value: 40 },
+    { name: "Dragon Knight", value: 75 },
+    { name: "Cursed Orb", value: 60 },
+    { name: "Requiem Arrow", value: 30 }
+];
+
+// ===== RENDER LIST =====
+const list = document.getElementById("list");
+const search = document.getElementById("search");
+
+function render(filter = "") {
+    list.innerHTML = "";
+    items
+        .filter(i => i.name.toLowerCase().includes(filter.toLowerCase()))
+        .forEach(i => {
+            const div = document.createElement("div");
+            div.className = "card";
+            div.innerHTML = `<b>${i.name}</b> — Value: ${i.value}`;
+            list.appendChild(div);
+        });
+}
+
+search.addEventListener("input", e => render(e.target.value));
+
+render();
+
+// ===== CALCULATOR =====
+function getValue(name) {
+    const item = items.find(i => i.name.toLowerCase() === name.toLowerCase());
+    return item ? item.value : null;
+}
+
+function calculate() {
+    const a = document.getElementById("itemA").value;
+    const b = document.getElementById("itemB").value;
+
+    const valA = getValue(a);
+    const valB = getValue(b);
+
+    const result = document.getElementById("result");
+
+    if (valA === null || valB === null) {
+        result.innerText = "Item not found.";
+        return;
+    }
+
+    if (valA > valB) {
+        result.innerText = "You are overpaying.";
+    } else if (valA < valB) {
+        result.innerText = "You are underpaying.";
+    } else {
+        result.innerText = "Fair trade.";
+    }
+}
+
+</script>
+
+</body>
+</html>
