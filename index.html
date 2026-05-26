@@ -3,159 +3,120 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AUT Value Calculator</title>
+<title>AUT Hub</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0f172a;
-    color: #e2e8f0;
-}
-
-header {
-    text-align: center;
-    padding: 20px;
-    background: #020617;
-}
-
-h1 {
-    margin: 0;
-}
-
-.container {
-    max-width: 1000px;
-    margin: auto;
-    padding: 20px;
-}
-
-.search {
-    width: 100%;
-    padding: 10px;
-    border-radius: 10px;
-    border: none;
-    margin-bottom: 20px;
-}
-
-.card {
-    background: #020617;
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-}
-
-.flex {
-    display: flex;
-    gap: 10px;
-}
-
-button {
-    background: #38bdf8;
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-button:hover {
-    opacity: 0.8;
-}
-
-.result {
-    margin-top: 20px;
-    font-size: 1.2rem;
-}
+body { margin:0; font-family:Arial; background:#0f172a; color:#e2e8f0; }
+header { background:#020617; padding:15px; display:flex; gap:20px; justify-content:center; }
+header button { background:none; border:none; color:#38bdf8; font-weight:bold; cursor:pointer; }
+.container { padding:20px; max-width:1100px; margin:auto; }
+.hidden { display:none; }
+.card { background:#020617; padding:15px; border-radius:12px; margin:10px 0; }
+input { padding:10px; border-radius:8px; border:none; margin:5px; }
+button.action { background:#38bdf8; border:none; padding:10px; border-radius:8px; cursor:pointer; }
 </style>
 </head>
 
 <body>
 
 <header>
-    <h1>AUT Value Calculator</h1>
+<button onclick="showTab('values')">Values</button>
+<button onclick="showTab('calc')">Calculator</button>
+<button onclick="showTab('contact')">Contact</button>
 </header>
 
 <div class="container">
 
-<input class="search" id="search" placeholder="Search items, stands, specs...">
-
+<!-- VALUES TAB -->
+<div id="values">
+<h2>All Values</h2>
+<input id="search" placeholder="Search anything...">
 <div id="list"></div>
-
-<h2>Trade Calculator</h2>
-
-<div class="flex">
-    <input id="itemA" placeholder="Your item">
-    <input id="itemB" placeholder="Their item">
 </div>
 
+<!-- CALCULATOR TAB -->
+<div id="calc" class="hidden">
+<h2>Trade Calculator</h2>
+<input id="a" placeholder="Your items (comma separated)">
+<input id="b" placeholder="Their items (comma separated)">
 <br>
+<button class="action" onclick="calcTrade()">Compare</button>
+<div id="result"></div>
+</div>
 
-<button onclick="calculate()">Compare Trade</button>
-
-<div class="result" id="result"></div>
+<!-- CONTACT TAB -->
+<div id="contact" class="hidden">
+<h2>Contact</h2>
+<div class="card">Discord: yourname#0000</div>
+<div class="card">Suggestions coming soon</div>
+</div>
 
 </div>
 
 <script>
 
-// ===== DATABASE (EDIT THIS) =====
-const items = [
-    { name: "Shadow The World", value: 90 },
-    { name: "Gojo", value: 85 },
-    { name: "Nocturnus", value: 100 },
-    { name: "Killer Queen", value: 40 },
-    { name: "Dragon Knight", value: 75 },
-    { name: "Cursed Orb", value: 60 },
-    { name: "Requiem Arrow", value: 30 }
+// MASSIVE DATA STRUCTURE (YOU EXPAND THIS)
+const database = [
+// STANDS
+{name:"Shadow The World", value:90, type:"Stand"},
+{name:"Nocturnus", value:100, type:"Stand"},
+
+// SPECS
+{name:"Gojo", value:85, type:"Spec"},
+{name:"Yasuo", value:70, type:"Spec"},
+
+// ITEMS
+{name:"Cursed Orb", value:60, type:"Item"},
+{name:"Requiem Arrow", value:30, type:"Item"},
+
+// SKINS
+{name:"SPTW: OVA", value:120, type:"Skin"}
 ];
 
-// ===== RENDER LIST =====
+function showTab(tab) {
+ document.querySelectorAll('.container > div').forEach(d=>d.classList.add('hidden'));
+ document.getElementById(tab).classList.remove('hidden');
+}
+
+// RENDER VALUES
 const list = document.getElementById("list");
 const search = document.getElementById("search");
 
-function render(filter = "") {
-    list.innerHTML = "";
-    items
-        .filter(i => i.name.toLowerCase().includes(filter.toLowerCase()))
-        .forEach(i => {
-            const div = document.createElement("div");
-            div.className = "card";
-            div.innerHTML = `<b>${i.name}</b> — Value: ${i.value}`;
-            list.appendChild(div);
-        });
+function render(filter=""){
+ list.innerHTML="";
+ database
+ .filter(x=>x.name.toLowerCase().includes(filter.toLowerCase()))
+ .forEach(x=>{
+  const div=document.createElement("div");
+  div.className="card";
+  div.innerHTML=`<b>${x.name}</b> (${x.type}) - Value: ${x.value}`;
+  list.appendChild(div);
+ });
 }
 
-search.addEventListener("input", e => render(e.target.value));
-
+search.addEventListener("input",e=>render(e.target.value));
 render();
 
-// ===== CALCULATOR =====
-function getValue(name) {
-    const item = items.find(i => i.name.toLowerCase() === name.toLowerCase());
-    return item ? item.value : null;
+// CALCULATOR
+function getVal(name){
+ const item = database.find(x=>x.name.toLowerCase().trim()===name.toLowerCase().trim());
+ return item?item.value:0;
 }
 
-function calculate() {
-    const a = document.getElementById("itemA").value;
-    const b = document.getElementById("itemB").value;
+function sum(input){
+ return input.split(",").reduce((acc,x)=>acc+getVal(x),0);
+}
 
-    const valA = getValue(a);
-    const valB = getValue(b);
+function calcTrade(){
+ const a = sum(document.getElementById("a").value);
+ const b = sum(document.getElementById("b").value);
 
-    const result = document.getElementById("result");
+ let text="";
+ if(a>b) text="You are overpaying";
+ else if(a<b) text="You are underpaying";
+ else text="Fair trade";
 
-    if (valA === null || valB === null) {
-        result.innerText = "Item not found.";
-        return;
-    }
-
-    if (valA > valB) {
-        result.innerText = "You are overpaying.";
-    } else if (valA < valB) {
-        result.innerText = "You are underpaying.";
-    } else {
-        result.innerText = "Fair trade.";
-    }
+ document.getElementById("result").innerText = `Your value: ${a} | Their value: ${b} → ${text}`;
 }
 
 </script>
